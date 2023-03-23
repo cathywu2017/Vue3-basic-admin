@@ -1,28 +1,32 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterView } from 'vue-router'
+import SideBar from './components/default/SideBar.vue'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <div class="common-layout">
+    <el-container>
+      <el-header>
+        <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="25" height="25" />
+        Header
+      </el-header>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+      <el-container>
+        <el-aside width="100px">
+          <SideBar />
+        </el-aside>
+        <el-main>
+          <RouterView />
+        </el-main>
+      </el-container>
+    </el-container>
+  </div>
 </template>
 
 <style scoped>
 header {
   line-height: 1.5;
+  background-color: #e5e5e5;
   max-height: 100vh;
 }
 
@@ -64,7 +68,7 @@ nav a:first-of-type {
   }
 
   .logo {
-    margin: 0 2rem 0 0;
+    margin: 0 1rem 0 0;
   }
 
   header .wrapper {
