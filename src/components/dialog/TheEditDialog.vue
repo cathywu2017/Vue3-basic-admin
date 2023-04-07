@@ -1,13 +1,13 @@
 <template>
   <el-dialog
     v-model="isShow"
-    title="新增"
+    title="修改"
     width="350px"
     :before-close="closeDialog"
   >
     <el-form>
       <el-form-item label="帳號">
-        <el-input v-model="form.username" autocomplete="off" />
+        {{props.row.username}}
       </el-form-item>
       <el-form-item label="啟用">
         <el-radio-group v-model="form.enable">
@@ -35,17 +35,17 @@
 import { ref, watch } from 'vue';
 
 const props = defineProps({
-  dialogAddVisible: Boolean,
-  data: Object,
+  dialogEditVisible: Boolean,
+  row: Object,
 })
 
 const emits = defineEmits([
-  'changeAddVisible',
-  'changeAddData',
+  'changeEditVisible',
+  'changeEditData',
 ])
 
 const initForm = {
-  username: '',
+  id: 1,
   enable: '1',
   locked: '1',
 };
@@ -55,36 +55,45 @@ const error = ref('');
 const form = ref({ ...initForm });
 
 const closeDialog = () => {
-  emits('changeAddVisible')
-
-  //關閉後清空 input 資料
-  form.value = { ...initForm };
+  emits('changeEditVisible')
 }
 
 const submit = () => {
   const body = form.value;
   const params = {
-    method: 'POST',
+    method: 'PUT',
     headers:new Headers({
       'Content-Type': 'application/json',
     }),
     body: JSON.stringify(body),
   }
 
-  fetch('http://localhost:9988/api/user', params)
+  fetch(`http://localhost:9988/api/user/${form.value.id}`, params)
     .then((res) => res.json())
-    .then((res) => emits('changeAddData', res))
+    .then(() => emits('changeEditData'))
     .catch((err) => error.value = err)
 
+    console.log('a1')
   // 送出搜尋
   closeDialog();
 }
 
 // 監聽 dialogAddVisible 是否變動
 watch(
-  () => props.dialogAddVisible,
+  () => props.dialogEditVisible,
   (newVal) => {
     isShow.value = newVal;
+})
+
+// 監聽 row 是否變動
+watch(
+  () => props.row,
+  (newVal) => {
+    form.value = {
+      id: newVal.id,
+      enable: newVal.enable.toString(),
+      locked: newVal.locked.toString(),
+    };
 })
 </script>
 

@@ -2,8 +2,8 @@
   <el-row class="action-block">
     <el-col :span="24">
       <div class="grid-content ep-bg-purple-dark">
-        <el-button type="success" size="default" @click="openDialog('search')">搜尋</el-button>
-        <el-button type="success" size="default" @click="openDialog('add')">新增</el-button>
+        <el-button type="success" size="default" @click="openDialog('search', null)">搜尋</el-button>
+        <el-button type="success" size="default" @click="openDialog('add', null)">新增</el-button>
         <el-button type="success" size="default">匯出</el-button>
       </div>
     </el-col>
@@ -30,33 +30,73 @@
     <el-table-column prop="enable" label="啟用" />
     <el-table-column prop="locked" label="鎖定" />
     <el-table-column prop="Operations" label="操作">
-      <el-button type="primary" size="small">Edit</el-button>
-      <el-button type="danger" size="small">Delete</el-button>
+      <template #default="scope">
+        <el-button type="primary" size="small" @click="openDialog('edit', scope.row)">Edit</el-button>
+        <el-button type="danger" size="small" @click="openDialog('delete', scope.row)">Delete</el-button>
+      </template>
     </el-table-column>
   </el-table>
+
+  <TheEditDialog
+    :dialogEditVisible="dialogEditVisible"
+    :row="row"
+    @changeEditVisible="changeEditVisible"
+    @changeEditData="changeEditData"
+  />
+
+  <el-dialog
+    v-model="dialogDeleteVisible"
+    title="刪除"
+    width="30%"
+    :before-close="() => dialogDeleteVisible = false"
+  >
+    <span>是否確認刪除{{deleteInfo.username}}？</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogDeleteVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleDelete">確認</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import TheSearchDialog from '../dialog/TheSearchDialog.vue';
 import TheAddDialog from '../dialog/TheAddDialog.vue';
+import TheEditDialog from '../dialog/TheEditDialog.vue';
 
 const dialogSearchVisible = ref(false);
 const dialogAddVisible = ref(false);
-
+const dialogEditVisible = ref(false);
+const dialogDeleteVisible = ref(false);
+const row = ref({});
 const data = ref({
   ret: [],
 });
+const deleteInfo = ref({});
 const error = ref('');
 
 // 開啟彈窗
-const openDialog = (type: string) => {
+const openDialog = (type: string, info: object) => {
   if (type === 'search') {
     dialogSearchVisible.value = true
   }
 
   if (type === 'add') {
     dialogAddVisible.value = true
+  }
+
+  if (type === 'edit') {
+    dialogEditVisible.value = true
+
+    row.value = info
+  }
+
+  if (type === 'delete') {
+    dialogDeleteVisible.value = true
+
+    deleteInfo.value = info;
   }
 }
 
@@ -70,14 +110,21 @@ const changeAddVisible = () => {
   dialogAddVisible.value = false
 }
 
+// 變更編輯彈窗
+const changeEditVisible = () => {
+  dialogEditVisible.value = false
+}
+
 const changeData = (res: { ret: [] }) => {
-  console.log(res);
   data.value = res
 }
 
 const changeAddData = (res: { ret: [] }) => {
-  console.log(res);
   data.value.ret.push({ ...res.ret })
+}
+
+const changeEditData = () => {
+  getUsers()
 }
 
 const getUsers = () => {
@@ -85,6 +132,22 @@ const getUsers = () => {
     .then((res) => res.json())
     .then((d) => (data.value = d))
     .catch((err) => error.value = err)
+}
+
+const handleDelete = () => {
+  const params = {
+    method: 'Delete',
+    headers:new Headers({
+      'Content-Type': 'application/json',
+    }),
+  }
+
+  fetch(`http://localhost:9988/api/user/${deleteInfo.value.id}`, params)
+    .then((res) => res.json())
+    .then(() => getUsers())
+    .catch((err) => error.value = err)
+
+    dialogDeleteVisible.value = false;
 }
 
 onMounted(() => {
