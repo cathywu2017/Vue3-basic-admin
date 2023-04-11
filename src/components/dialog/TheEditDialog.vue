@@ -41,7 +41,7 @@ const props = defineProps({
 
 const emits = defineEmits([
   'changeEditVisible',
-  'changeEditData',
+  'getUsers',
 ])
 
 const initForm = {
@@ -70,10 +70,9 @@ const submit = () => {
 
   fetch(`http://localhost:9988/api/user/${form.value.id}`, params)
     .then((res) => res.json())
-    .then(() => emits('changeEditData'))
+    .then(() => emits('getUsers'))
     .catch((err) => error.value = err)
 
-    console.log('a1')
   // 送出搜尋
   closeDialog();
 }

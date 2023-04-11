@@ -41,23 +41,16 @@
     :dialogEditVisible="dialogEditVisible"
     :row="row"
     @changeEditVisible="changeEditVisible"
-    @changeEditData="changeEditData"
+    @getUsers="getUsers"
   />
 
-  <el-dialog
-    v-model="dialogDeleteVisible"
-    title="刪除"
-    width="30%"
-    :before-close="() => dialogDeleteVisible = false"
-  >
-    <span>是否確認刪除{{deleteInfo.username}}？</span>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogDeleteVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleDelete">確認</el-button>
-      </span>
-    </template>
-  </el-dialog>
+  <TheDeleteDialog
+    :dialogDeleteVisible="dialogDeleteVisible"
+    :deleteInfo="deleteInfo"
+    @changeDeleteVisible="changeDeleteVisible"
+    @getUsers="getUsers"
+
+  />
 </template>
 
 <script lang="ts" setup>
@@ -65,6 +58,7 @@ import { ref, onMounted } from 'vue';
 import TheSearchDialog from '../dialog/TheSearchDialog.vue';
 import TheAddDialog from '../dialog/TheAddDialog.vue';
 import TheEditDialog from '../dialog/TheEditDialog.vue';
+import TheDeleteDialog from '../dialog/TheDeleteDialog.vue';
 
 const dialogSearchVisible = ref(false);
 const dialogAddVisible = ref(false);
@@ -115,16 +109,17 @@ const changeEditVisible = () => {
   dialogEditVisible.value = false
 }
 
+// 變更刪除彈窗
+const changeDeleteVisible = () => {
+  dialogDeleteVisible.value = false
+}
+
 const changeData = (res: { ret: [] }) => {
   data.value = res
 }
 
 const changeAddData = (res: { ret: [] }) => {
   data.value.ret.push({ ...res.ret })
-}
-
-const changeEditData = () => {
-  getUsers()
 }
 
 const getUsers = () => {
@@ -134,21 +129,7 @@ const getUsers = () => {
     .catch((err) => error.value = err)
 }
 
-const handleDelete = () => {
-  const params = {
-    method: 'Delete',
-    headers:new Headers({
-      'Content-Type': 'application/json',
-    }),
-  }
 
-  fetch(`http://localhost:9988/api/user/${deleteInfo.value.id}`, params)
-    .then((res) => res.json())
-    .then(() => getUsers())
-    .catch((err) => error.value = err)
-
-    dialogDeleteVisible.value = false;
-}
 
 onMounted(() => {
   getUsers();
